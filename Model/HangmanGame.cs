@@ -5,6 +5,11 @@ namespace Hangman.Model
 {
     public class HangmanGame
     {
+        // ? Declare delegate type
+        public delegate void GameStateChangedHandler(string displayWord, int remainingLives, HashSet<char> wrongGuesses);
+
+        // ? Create an event using the delegate
+        public event GameStateChangedHandler OnGameStateChanged;
 
         private string secretWord;
         private string hint;
@@ -24,23 +29,46 @@ namespace Hangman.Model
         }
 
         // Process a letter guess
+        //public bool GuessLetter(char letter)
+        //{
+        //    letter = char.ToUpper(letter);
+        //    if (secretWord.Contains(letter.ToString()))
+        //    {
+        //        correctGuesses.Add(letter);
+        //        remainingLives = 3;
+        //        return true;
+        //    }
+        //    else
+        //    {
+        //        if (!wrongGuesses.Contains(letter))
+        //            wrongGuesses.Add(letter);
+        //        remainingLives--;
+        //        return false;
+        //    }
+        //}
+
         public bool GuessLetter(char letter)
         {
             letter = char.ToUpper(letter);
+            bool correct = false;
+
             if (secretWord.Contains(letter.ToString()))
             {
                 correctGuesses.Add(letter);
-                remainingLives = 3;
-                return true;
+                correct = true;
             }
             else
             {
-                if (!wrongGuesses.Contains(letter))
-                    wrongGuesses.Add(letter);
+                wrongGuesses.Add(letter);
                 remainingLives--;
-                return false;
             }
+
+            // ? Notify subscribers (Controller/View)
+            OnGameStateChanged?.Invoke(GetDisplayWord(), remainingLives, wrongGuesses);
+
+            return correct;
         }
+
 
         // Return word with underscores for unguessed letters
         public string GetDisplayWord()

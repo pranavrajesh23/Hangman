@@ -2,6 +2,8 @@ using System;
 using Hangman.Model;
 using Hangman.View;
 using System.Threading;
+using System.Collections.Generic;
+
 
 namespace Hangman.Controller
 {
@@ -28,60 +30,54 @@ namespace Hangman.Controller
 
                 // 2?? Initialize a new Hangman game
                 game = new HangmanGame(entry.Word, entry.Hint);
+                game.OnGameStateChanged += HandleGameStateChanged;
+
+                view.DisplayGameState(game.GetDisplayWord(), game.RemainingLives, game.WrongGuesses, game.Hint);
 
                 // 3?? Game loop
                 while (!game.IsGameOver())
                 {
-                    view.DisplayGameState(game.GetDisplayWord(), game.RemainingLives, game.WrongGuesses,game.Hint);
+                    
 
                     //char guess = view.GetUserGuess();
                     char guess = view.GetUserKey();
-
-                    if (guess == '?') // if player wants a hint
+                    bool correct = game.GuessLetter(guess);
+                    if (correct)
                     {
-                        if (!game.HintUsed)
-                            view.DisplayHint(game.GetHint());
-                        else
-                            view.DisplayMessage("Hint already used!");
+                        view.DisplayMessage("Correct guess!"); Thread.Sleep(1500);
                     }
+
                     else
                     {
-                        bool correct = game.GuessLetter(guess);
-                        if (correct)
-                        { view.DisplayMessage("Correct guess!");Thread.Sleep(1500); }
-                            
-                        else{
-string firstAttempt = @"
- |     
- |         
- |         First Attempt
- |            
- |      
- |
-_|___
-";
+                        string firstAttempt = @"
+         |     
+         |         
+         |         First Attempt
+         |            
+         |      
+         |
+        _|___
+        ";
 
-string secondAttempt = @"
- ________
- |/      |
- |       |  
- |          
- |            
- |      
- |
-_|___
-";
-                            if (game.RemainingLives==2)
-                            {
-                                view.DisplayMessage(firstAttempt); Thread.Sleep(1500);
-                            }
-                            else if (game.RemainingLives == 1)
-                            {
-                                view.DisplayMessage(secondAttempt); Thread.Sleep(1500);
-                            }
-                                 
+                        string secondAttempt = @"
+         ________
+         |/      |
+         |       |  
+         |          
+         |            
+         |      
+         |
+        _|___
+        ";
+                        if (game.RemainingLives == 2)
+                        {
+                            view.DisplayMessage(firstAttempt); Thread.Sleep(1500);
                         }
-                            
+                        else if (game.RemainingLives == 1)
+                        {
+                            view.DisplayMessage(secondAttempt); Thread.Sleep(1500);
+                        }
+
                     }
                 }
 
@@ -97,5 +93,12 @@ _|___
 
             view.DisplayMessage("Thanks for playing Hangman! ??");
         }
+
+        // ? Event handler that runs whenever the game updates
+        private void HandleGameStateChanged(string displayWord, int remainingLives, HashSet<char> wrongGuesses)
+        {
+            view.DisplayGameState(displayWord, remainingLives, wrongGuesses, game.GetHint());
+        }
+
     }
 }
