@@ -81,23 +81,31 @@ namespace Hangman.Controller
                     }
                 }
 
-                // 4?? Game ended ? check win/loss
-                if (game.IsWordGuessed())
-                    view.DisplayWinMessage(game.GetDisplayWord());
-                else
-                    view.DisplayLoseMessage(entry.Word);
+                //// 4?? Game ended ? check win/loss
+                //if (game.IsWordGuessed())
+                //    view.DisplayWinMessage(game.GetDisplayWord());
+                //else
+                //    view.DisplayLoseMessage(entry.Word);
 
                 // 5?? Ask if the player wants to play again
                 playAgain = view.AskPlayAgain();
             }
 
-            view.DisplayMessage("Thanks for playing Hangman! ??");
+            view.DisplayMessage("Thanks for playing Hangman!");
         }
 
         // ? Event handler that runs whenever the game updates
-        private void HandleGameStateChanged(string displayWord, int remainingLives, HashSet<char> wrongGuesses)
+        private void HandleGameStateChanged(string displayWord, int remainingLives, HashSet<char> wrongGuesses,GameStatus status)
         {
             view.DisplayGameState(displayWord, remainingLives, wrongGuesses, game.GetHint());
+            if (status == GameStatus.Won)
+            {
+                view.DisplayWinMessage(displayWord);
+            }
+            else if (status == GameStatus.Lost)
+            {
+                view.DisplayLoseMessage(game.GetSecretWord());
+            }
         }
 
     }

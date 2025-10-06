@@ -3,58 +3,46 @@ using System.Collections.Generic;
 
 namespace Hangman.Model
 {
+    // ? Declare delegate type
+    public delegate void GameStateChangedHandler(string displayWord, int remainingLives, HashSet<char> wrongGuesses,GameStatus status);
     public class HangmanGame
     {
-        // ? Declare delegate type
-        public delegate void GameStateChangedHandler(string displayWord, int remainingLives, HashSet<char> wrongGuesses);
-
-        // ? Create an event using the delegate
-        public event GameStateChangedHandler OnGameStateChanged;
-
         private string secretWord;
         private string hint;
         private HashSet<char> correctGuesses;
         private HashSet<char> wrongGuesses;
         private int remainingLives;
-        private bool hintUsed;
+        private GameStatus status;
+
+        // ? Create an event using the delegate
+        public event GameStateChangedHandler OnGameStateChanged;
 
         public HangmanGame(string word, string wordHint, int maxLives = 3)
         {
-            secretWord = word;
+            secretWord = word.ToUpper();
             hint = wordHint;
             remainingLives = maxLives;
             correctGuesses = new HashSet<char>();
             wrongGuesses = new HashSet<char>();
-            hintUsed = false;
+            status = GameStatus.Playing;
         }
 
-        // Process a letter guess
-        //public bool GuessLetter(char letter)
-        //{
-        //    letter = char.ToUpper(letter);
-        //    if (secretWord.Contains(letter.ToString()))
-        //    {
-        //        correctGuesses.Add(letter);
-        //        remainingLives = 3;
-        //        return true;
-        //    }
-        //    else
-        //    {
-        //        if (!wrongGuesses.Contains(letter))
-        //            wrongGuesses.Add(letter);
-        //        remainingLives--;
-        //        return false;
-        //    }
-        //}
+        public string GetSecretWord()
+        {
+            return secretWord;
+        }
 
         public bool GuessLetter(char letter)
         {
             letter = char.ToUpper(letter);
             bool correct = false;
 
+            if (status != GameStatus.Playing) return false;
+
             if (secretWord.Contains(letter.ToString()))
             {
                 correctGuesses.Add(letter);
+                remainingLives = 3;
                 correct = true;
             }
             else
@@ -63,8 +51,15 @@ namespace Hangman.Model
                 remainingLives--;
             }
 
+            if (IsWordGuessed())
+                status = GameStatus.Won;
+            else if (remainingLives <= 0)
+                status = GameStatus.Lost;
+            else
+                status = GameStatus.Playing;
+
             // ? Notify subscribers (Controller/View)
-            OnGameStateChanged?.Invoke(GetDisplayWord(), remainingLives, wrongGuesses);
+            OnGameStateChanged?.Invoke(GetDisplayWord(), remainingLives, wrongGuesses,status);
 
             return correct;
         }
@@ -82,11 +77,14 @@ namespace Hangman.Model
             return string.Join(" ", display);
         }
 
-        // Return hint and mark as used
         public string GetHint()
         {
-            hintUsed = true;
             return hint;
+        }
+
+        public bool IsGameOver()
+        {
+            return Status == GameStatus.Won || Status == GameStatus.Lost;
         }
 
         public bool IsWordGuessed()
@@ -98,16 +96,10 @@ namespace Hangman.Model
             return true;
         }
 
-        public bool IsGameOver()
-        {
-            return remainingLives <= 0 || IsWordGuessed();
-        }
-
         // Properties to expose state
         public int RemainingLives => remainingLives;
-        public bool HintUsed => hintUsed;
         public HashSet<char> WrongGuesses => wrongGuesses;
         public string Hint => hint; // already in your model
-
+        public GameStatus Status => status;
     }
 }
