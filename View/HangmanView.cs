@@ -50,6 +50,7 @@ namespace Hangman.View
         // Display a message (general purpose)
         public void DisplayMessage(string message)
         {
+            //Console.Clear();
             Console.WriteLine(message);
             //Console.WriteLine("Press any key to continue...");
             //Console.ReadKey();
