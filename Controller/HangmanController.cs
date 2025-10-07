@@ -25,26 +25,25 @@ namespace Hangman.Controller
 
             while (playAgain)
             {
-                // 1?? Get random word + hint from the provider
+                Console.Clear();
                 WordEntry entry = wordProvider.GetRandomWord();
 
-                // 2?? Initialize a new Hangman game
                 game = new HangmanGame(entry.Word, entry.Hint);
+                game.OnGameStateChanged -= HandleGameStateChanged;
                 game.OnGameStateChanged += HandleGameStateChanged;
 
                 view.DisplayGameState(game.GetDisplayWord(), game.RemainingLives, game.WrongGuesses, game.Hint);
 
-                // 3?? Game loop
                 while (!game.IsGameOver())
                 {
-                    
-
-                    //char guess = view.GetUserGuess();
                     char guess = view.GetUserKey();
                     bool correct = game.GuessLetter(guess);
                     if (correct)
                     {
-                        view.DisplayMessage("Correct guess!"); Thread.Sleep(1500);
+                        view.DisplayMessage("Correct guess!"); 
+                        Thread.Sleep(200);
+                        Console.Clear();
+                        view.DisplayGameState(game.GetDisplayWord(), game.RemainingLives, game.WrongGuesses, game.Hint);
                     }
 
                     else
@@ -71,40 +70,37 @@ namespace Hangman.Controller
         ";
                         if (game.RemainingLives == 2)
                         {
-                            view.DisplayMessage(firstAttempt); Thread.Sleep(1500);
+                            view.DisplayMessage(firstAttempt); 
+                            Thread.Sleep(1500);
                         }
                         else if (game.RemainingLives == 1)
                         {
-                            view.DisplayMessage(secondAttempt); Thread.Sleep(1500);
+                            view.DisplayMessage(secondAttempt); 
+                            Thread.Sleep(1500);
                         }
 
                     }
                 }
+                Console.Clear();
+                view.DisplayGameState(game.GetDisplayWord(), game.RemainingLives, game.WrongGuesses, game.Hint);
 
-                //// 4?? Game ended ? check win/loss
-                //if (game.IsWordGuessed())
-                //    view.DisplayWinMessage(game.GetDisplayWord());
-                //else
-                //    view.DisplayLoseMessage(entry.Word);
-
-                // 5?? Ask if the player wants to play again
+                if (game.Status == GameStatus.Won)
+                {
+                    view.DisplayWinMessage(game.GetDisplayWord());
+                }
+                else if (game.Status == GameStatus.Lost)
+                {
+                    view.DisplayLoseMessage(game.GetSecretWord());
+                }
                 playAgain = view.AskPlayAgain();
             }
-
             view.DisplayMessage("Thanks for playing Hangman!");
         }
-
-        // ? Event handler that runs whenever the game updates
         private void HandleGameStateChanged(string displayWord, int remainingLives, HashSet<char> wrongGuesses,GameStatus status)
         {
-            view.DisplayGameState(displayWord, remainingLives, wrongGuesses, game.GetHint());
-            if (status == GameStatus.Won)
+            if (status == GameStatus.Playing)
             {
-                view.DisplayWinMessage(displayWord);
-            }
-            else if (status == GameStatus.Lost)
-            {
-                view.DisplayLoseMessage(game.GetSecretWord());
+                view.DisplayGameState(displayWord, remainingLives, wrongGuesses, game.GetHint());
             }
         }
 

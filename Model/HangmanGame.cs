@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Hangman.Model
 {
-    // ? Declare delegate type
     public delegate void GameStateChangedHandler(string displayWord, int remainingLives, HashSet<char> wrongGuesses,GameStatus status);
     public class HangmanGame
     {
@@ -14,7 +14,6 @@ namespace Hangman.Model
         private int remainingLives;
         private GameStatus status;
 
-        // ? Create an event using the delegate
         public event GameStateChangedHandler OnGameStateChanged;
 
         public HangmanGame(string word, string wordHint, int maxLives = 3)
@@ -39,6 +38,16 @@ namespace Hangman.Model
 
             if (status != GameStatus.Playing) return false;
 
+            if (correctGuesses.Contains(letter) || wrongGuesses.Contains(letter))
+            {
+                // Trigger update (to refresh UI, maybe show a message)
+                OnGameStateChanged?.Invoke(GetDisplayWord(), remainingLives, wrongGuesses, status);
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"\nYou already tried '{letter}'! Try a different letter.");
+                Console.ResetColor();
+                Thread.Sleep(1000);
+                return false;
+            }
             if (secretWord.Contains(letter.ToString()))
             {
                 correctGuesses.Add(letter);
@@ -64,8 +73,6 @@ namespace Hangman.Model
             return correct;
         }
 
-
-        // Return word with underscores for unguessed letters
         public string GetDisplayWord()
         {
             char[] display = new char[secretWord.Length];
@@ -96,10 +103,9 @@ namespace Hangman.Model
             return true;
         }
 
-        // Properties to expose state
         public int RemainingLives => remainingLives;
         public HashSet<char> WrongGuesses => wrongGuesses;
-        public string Hint => hint; // already in your model
+        public string Hint => hint;
         public GameStatus Status => status;
     }
 }

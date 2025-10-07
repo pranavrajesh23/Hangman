@@ -21,50 +21,28 @@ namespace Hangman.View
             Console.WriteLine("Enter a letter to guess: ");
         }
 
-        //Get a single letter guess from the user
-        //public char GetUserGuess()
-        //{
-        //    string input = Console.ReadLine()?.Trim().ToUpper();
-        //    if (string.IsNullOrEmpty(input))
-        //        return '\0';
-
-        //    return input[0]; // only take first character
-        //}
-
         public char GetUserKey()
         {
             char key = '\0';
             while (true)
             {
-                var info = Console.ReadKey(true); // read single key instantly
-                if (char.IsLetter(info.KeyChar) || info.KeyChar == '?')
+                var info = Console.ReadKey(true);
+                if (char.IsLetter(info.KeyChar))
                 {
                     key = char.ToUpper(info.KeyChar);
                     Console.WriteLine(key);
+                    Thread.Sleep(200);
                     break;
                 }
             }
             return key;
         }
-
-        // Display a message (general purpose)
         public void DisplayMessage(string message)
         {
-            //Console.Clear();
             Console.WriteLine(message);
-            //Console.WriteLine("Press any key to continue...");
-            //Console.ReadKey();
+            Thread.Sleep(500);
         }
 
-        // Show hint to the user
-        public void DisplayHint(string hint)
-        {
-            Console.WriteLine($"Hint: {hint}");
-            //Console.WriteLine("Press any key to continue...");
-            //Console.ReadKey();
-        }
-
-        // Display winning message
         public void DisplayWinMessage(string finalWord)
         {
             Console.Clear();
@@ -78,8 +56,6 @@ namespace Hangman.View
          |      \|/    VAREN DA AYYASAMY
          |       |      
         _|___   / \
-         
-        
         ";
             Console.WriteLine(suc);
             Console.WriteLine("Congratulations! You guessed the word!");
@@ -88,7 +64,6 @@ namespace Hangman.View
             Console.ResetColor();
         }
 
-        // Display losing message
         public void DisplayLoseMessage(string finalWord)
         {
             Console.Clear();
@@ -110,7 +85,6 @@ namespace Hangman.View
             Console.ResetColor();
         }
 
-        // Ask if player wants to play again
         public bool AskPlayAgain()
         {
             Console.WriteLine("Do you want to play again? (Y/N): ");
